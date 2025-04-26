@@ -1,0 +1,9 @@
+# Run lint & typescript check
+pnpm lint
+
+# # Run typescript check
+pnpm tsc --noEmit
+
+# .husky/pre-commit
+prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g' | grep -v "\.json$") --write --ignore-unknown
+git update-index --again
