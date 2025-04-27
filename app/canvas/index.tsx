@@ -7,6 +7,7 @@ import { createBasis } from "./lib/createBasis";
 import { createTexture } from "./lib/createTexture";
 import { createWater } from "./lib/createWater";
 import { createInteraction } from "./lib/createInteraction";
+// import { createLeaves } from "./lib/createLeaves";
 
 const speed = 5;
 
@@ -20,11 +21,12 @@ export default function Canvas() {
     let mousedown = false;
     const { mouseCoords, raycaster, simplex } = createInteraction();
     const { camera, renderer, scene } = createBasis(container.current);
-    createTexture(scene);
     const { waterMesh, meshRay, gpuCompute, heightmapVariable } = createWater(
       renderer,
       simplex,
     );
+    createTexture(scene);
+    // createLeaves(scene, renderer, gpuCompute);
 
     scene.add(waterMesh);
     scene.add(meshRay);

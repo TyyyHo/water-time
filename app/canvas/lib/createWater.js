@@ -1,15 +1,10 @@
 import {
-  ClampToEdgeWrapping,
   DoubleSide,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  NearestFilter,
   PlaneGeometry,
-  RGBAFormat,
-  UnsignedByteType,
   Vector2,
-  WebGLRenderTarget,
 } from "three";
 import { GPUComputationRenderer } from "three/examples/jsm/Addons.js";
 import { shaderChange } from "../glsl/shaderChange";
@@ -17,9 +12,7 @@ import {
   waterLevelFragmentShader,
   smoothFragmentShader,
 } from "../glsl/water-shader";
-
-const BOUNDS = 12;
-const WIDTH = 256;
+import { BOUNDS, WIDTH } from "../constant";
 
 export function createWater(renderer, simplex) {
   const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
@@ -95,26 +88,11 @@ export function createWater(renderer, simplex) {
   readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
   readWaterLevelShader.defines.BOUNDS = BOUNDS.toFixed(1);
 
-  // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
-  const readWaterLevelImage = new Uint8Array(4 * 1 * 4);
-
-  const readWaterLevelRenderTarget = new WebGLRenderTarget(4, 1, {
-    wrapS: ClampToEdgeWrapping,
-    wrapT: ClampToEdgeWrapping,
-    minFilter: NearestFilter,
-    magFilter: NearestFilter,
-    format: RGBAFormat,
-    type: UnsignedByteType,
-    depthBuffer: false,
-  });
-
   return {
     gpuCompute,
     heightmapVariable,
     smoothShader,
     readWaterLevelShader,
-    readWaterLevelRenderTarget,
-    readWaterLevelImage,
     waterMesh,
     meshRay,
   };
