@@ -1,6 +1,6 @@
 ## Water Time
 
-A water simulation.
+Water simulation
 
 上班累了就進來划划水
 
