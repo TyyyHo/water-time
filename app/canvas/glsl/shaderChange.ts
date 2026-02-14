@@ -1,6 +1,7 @@
 export const shaderChange = {
   heightmap_frag: /* glsl */ `
 				#include <common>
+				precision mediump float;
 
 				uniform vec2 mousePos;
 				uniform float mouseSize;
@@ -29,9 +30,9 @@ export const shaderChange = {
 
 
 					// Mouse influence
-					float mousePhase = clamp( length( ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( mousePos.x, - mousePos.y ) ) * PI / mouseSize, 0.0, PI );
-					//newHeight += ( cos( mousePhase ) + 1.0 ) * 0.28 * 10.0;
-					newHeight -= ( cos( mousePhase ) + 1.0 ) * deep;
+					vec2 mouseDelta = ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( mousePos.x, -mousePos.y );
+					float influence = 1.0 - smoothstep( 0.0, mouseSize, length( mouseDelta ) );
+					newHeight -= influence * deep;
 
 					heightmapValue.y = heightmapValue.x;
 					heightmapValue.x = newHeight;
@@ -44,20 +45,23 @@ export const shaderChange = {
   common: /* glsl */ `
 				#include <common>
 				uniform sampler2D heightmap;
+				float waveHeight;
 				`,
   beginnormal_vertex: /* glsl */ `
 				vec2 cellSize = vec2( 1.0 / WIDTH, 1.0 / WIDTH );
+				waveHeight = texture2D( heightmap, uv ).x;
+				float eastHeight = texture2D( heightmap, uv + vec2( cellSize.x, 0.0 ) ).x;
+				float northHeight = texture2D( heightmap, uv + vec2( 0.0, cellSize.y ) ).x;
 				vec3 objectNormal = vec3(
-				( texture2D( heightmap, uv + vec2( - cellSize.x, 0 ) ).x - texture2D( heightmap, uv + vec2( cellSize.x, 0 ) ).x ) * WIDTH / BOUNDS,
-				( texture2D( heightmap, uv + vec2( 0, - cellSize.y ) ).x - texture2D( heightmap, uv + vec2( 0, cellSize.y ) ).x ) * WIDTH / BOUNDS,
+				( waveHeight - eastHeight ) * WIDTH / BOUNDS,
+				( waveHeight - northHeight ) * WIDTH / BOUNDS,
 				1.0 );
 				#ifdef USE_TANGENT
 					vec3 objectTangent = vec3( tangent.xyz );
 				#endif
 				`,
   begin_vertex: /* glsl */ `
-				float heightValue = texture2D( heightmap, uv ).x;
-				vec3 transformed = vec3( position.x, position.y, heightValue );
+				vec3 transformed = vec3( position.x, position.y, waveHeight );
 				#ifdef USE_ALPHAHASH
 					vPosition = vec3( position );
 				#endif
